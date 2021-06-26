@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/ash
 str=$1
 pandoc -s -N ${str%.*}.md --webtex -o ${str%.*}.html \
 -F pandoc-crossref  \

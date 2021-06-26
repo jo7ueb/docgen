@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/ash
 str=$1
 pandoc -s -N ${str%.*}.md -o ${str%.*}.tex -V documentclass=ltjarticle --pdf-engine=lualatex \
 -F pandoc-crossref \
