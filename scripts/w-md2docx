@@ -1,0 +1,3 @@
+#! /bin/bash
+
+watcher $1  md2docx $1
