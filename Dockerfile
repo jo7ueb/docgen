@@ -1,4 +1,4 @@
-FROM paperist/alpine-texlive-ja AS base
+FROM jo7ueb/alpine-texlive-ja AS base
 
 ENV BUILD_DEPS \
     alpine-sdk \
