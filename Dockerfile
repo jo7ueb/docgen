@@ -7,10 +7,13 @@ ENV BUILD_DEPS \
     ghc \
     libffi \
     musl-dev \
+    lua5.3-dev \
     zlib-dev
 ENV PERSISTENT_DEPS \
     gmp \
-    graphviz \
+    libffi \
+    lua5.3 \
+    lua5.3-lpeg \
     sed
 
 ENV PANDOC_VERSION 2.14.0.3
@@ -26,11 +29,18 @@ RUN mkdir -p /pandoc-build && \
     cd /pandoc-build && \
     curl -fsSL "$PANDOC_DOWNLOAD_URL" | tar -xzf - && \
     cd pandoc-$PANDOC_VERSION && \
-    cabal update && \
+    cabal new-update && \
     cabal install --only-dependencies && \
     cabal configure --prefix=$PANDOC_ROOT && \
-    cabal build && \
-    cabal install && \
+    cabal new-build \
+       --disable-tests \
+       --jobs  \
+       . 
+RUN cd /pandoc-build/pandoc-$PANDOC_VERSION && \
+    mkdir -p $PANDOC_ROOT/bin && \
+    cabal install \
+      --installdir=$PANDOC_ROOT/bin \
+      --install-method=copy && \
     rm -Rf /pandoc-build \
            $PANDOC_ROOT/lib \
            /root/.cabal \
