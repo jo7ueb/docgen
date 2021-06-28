@@ -25,6 +25,8 @@ ENV PATH $PATH:$PANDOC_ROOT/bin
 RUN apk upgrade --update && \
     apk add --virtual .build-deps $BUILD_DEPS && \
     apk add --virtual .persistent-deps $PERSISTENT_DEPS
+
+# build pandoc
 RUN mkdir -p /pandoc-build && \
     cd /pandoc-build && \
     curl -fsSL "$PANDOC_DOWNLOAD_URL" | tar -xzf - && \
@@ -35,22 +37,43 @@ RUN mkdir -p /pandoc-build && \
     cabal new-build \
        --disable-tests \
        --jobs  \
-       . 
+       .
 RUN cd /pandoc-build/pandoc-$PANDOC_VERSION && \
     mkdir -p $PANDOC_ROOT/bin && \
     cabal install \
       --installdir=$PANDOC_ROOT/bin \
-      --install-method=copy && \
-    rm -Rf /pandoc-build \
-           $PANDOC_ROOT/lib \
-           /root/.cabal \
-           /root/.ghc && \
+      --install-method=copy
+
+# build pandoc-crossref
+ENV PANDOCCR_VERSION 0.3.12.0
+ENV PANDOCCR_DOWNLOAD_URL https://github.com/lierdakil/pandoc-crossref/archive/refs/tags/v$PANDOCCR_VERSION.tar.gz
+RUN cd /pandoc-build && \
+    curl -fsSL "$PANDOCCR_DOWNLOAD_URL" | tar -xzf - && \
+    cd pandoc-crossref-$PANDOCCR_VERSION && \
+    cabal install --only-dependencies && \
+    cabal configure --prefix=$PANDOC_ROOT && \
+    cabal new-build \
+      --jobs . && \
+    cabal install \
+      --installdir=$PANDOC_ROOT/bin \
+      --install-method=copy
+
+# final process
+RUN rm -Rf /pandoc-build \
+       $PANDOC_ROOT/lib \
+       /root/.cabal \
+       /root/.ghc && \
    set -x && \
    addgroup -g 1000 -S pandoc && \
    adduser -u 1000 -D -S -G pandoc pandoc && \
    apk del .build-deps
 
-RUN kanji-config-updmap-sys ipaex
+# process for TeX
+RUN kanji-config-updmap-sys ipaex && \
+    tlmgr install \
+      collection-langjapanese \
+      lm \ 
+      lm-math 
 
 COPY scripts/ /usr/local/bin/
 COPY crossref_config.yaml /config/crossref_config.yaml
