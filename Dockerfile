@@ -72,8 +72,10 @@ RUN rm -Rf /pandoc-build \
 RUN kanji-config-updmap-sys ipaex && \
     tlmgr install \
       collection-langjapanese \
-      lm \ 
-      lm-math 
+      lm \
+      lm-math \
+      lualatex-math \
+      selnolig
 
 COPY scripts/ /usr/local/bin/
 COPY crossref_config.yaml /config/crossref_config.yaml
